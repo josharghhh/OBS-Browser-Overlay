@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: transparent; /* Set background to transparent */
+        }
+        .webcam-border {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 660px;
+            height: 500px;
+            transform: translate(-50%, -50%);
+            z-index: 30;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .webcam-border svg {
+            width: 100%;
+            height: 100%;
+        }
+        .highlight {
+            stroke: hsl(180, 100%, 50%);
+            stroke-width: 5;
+            fill: transparent;
+            stroke-dasharray: 100, 2000;
+            stroke-dashoffset: 0;
+            animation: dash 5s linear infinite;
+            filter: url(#glow);
+            transition: all 1s ease-in-out;
+        }
+        @keyframes dash {
+            from {
+                stroke-dashoffset: 0;
+            }
+            to {
+                stroke-dashoffset: -2100;
+            }
+        }
+        .glow {
+            filter: url(#glow);
+        }
+        .slider-container {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 40;
+            color: white;
+            display: none; /* Initially hidden */
+            background: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .close-menu {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="webcam-border">
+        <svg viewBox="0 0 660 500">
+            <defs>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="4.5" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            <polygon class="highlight" id="highlight1" />
+            <polygon class="highlight" id="highlight2" />
+            <g id="additional-trails"></g>
+        </svg>
+    </div>
+    <div class="slider-container">
+        <button class="close-menu">X</button>
+        <label for="hue-slider">Hue:</label>
+        <input type="range" id="hue-slider" min="0" max="360" value="180">
+        <br>
+        <label for="trail-slider1">Trail Length 1:</label>
+        <input type="range" id="trail-slider1" min="1" max="10" value="5">
+        <br>
+        <label for="trail-slider2">Trail Length 2:</label>
+        <input type="range" id="trail-slider2" min="1" max="10" value="5">
+        <br>
+        <label for="number-of-trails">Number of Trails:</label>
+        <button id="decrease-trails">-</button>
+        <span id="trail-counter">0</span>
+        <button id="increase-trails">+</button>
+        <br>
+        <label for="speed-slider">Speed:</label>
+        <input type="range" id="speed-slider" min="-10" max="10" value="5">
+        <br>
+        <input type="checkbox" id="random-trail" />
+        <label for="random-trail">Randomize</label>
+        <br>
+        <button id="save-settings">Save Settings</button>
+    </div>
+    <script>
+        let numberOfTrails = 0;
+
+        function generateRandomPoints(reverse = false) {
+            const points = [];
+            const step = 20;
+            const width = 640;
+            const height = 480;
+
+            for (let x = 0; x <= width; x += step) {
+                const y = Math.random() * 10;
+                points.push(`${x},${y}`);
+            }
+            for (let y = 0; y <= height; y += step) {
+                const x = width + Math.random() * 10;
+                points.push(`${x},${y}`);
+            }
+            for (let x = width; x >= 0; x -= step) {
+                const y = height + Math.random() * 10;
+                points.push(`${x},${y}`);
+            }
+            for (let y = height; y >= 0; y -= step) {
+                const x = Math.random() * 10;
+                points.push(`${x},${y}`);
+            }
+            return points.join(' ');
+        }
+
+        function updatePolygonPoints() {
+            const polygon1 = document.getElementById('highlight1');
+            const polygon2 = document.getElementById('highlight2');
+            polygon1.setAttribute('points', generateRandomPoints());
+            updateTrailLength(1, polygon1);
+
+            setTimeout(() => {
+                polygon2.setAttribute('points', generateRandomPoints(true));
+                updateTrailLength(2, polygon2);
+            }, 10000);
+
+            const additionalTrailsContainer = document.getElementById('additional-trails');
+            const existingTrails = additionalTrailsContainer.children.length;
+
+            for (let i = existingTrails; i < numberOfTrails; i++) {
+                const newPolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                newPolygon.classList.add('highlight');
+                newPolygon.setAttribute('points', generateRandomPoints());
+                newPolygon.style.strokeDashoffset = -2000 * (i + 1);
+                updateTrailLength(i + 3, newPolygon);
+                additionalTrailsContainer.appendChild(newPolygon);
+            }
+
+            for (let i = existingTrails - 1; i >= numberOfTrails; i--) {
+                additionalTrailsContainer.removeChild(additionalTrailsContainer.children[i]);
+            }
+        }
+
+        function updatePolygonColor(hue) {
+            const polygons = document.querySelectorAll('.highlight');
+            polygons.forEach(polygon => {
+                polygon.style.stroke = `hsl(${hue}, 100%, 50%)`;
+            });
+        }
+
+        function updateTrailLength(index, polygon) {
+            polygon.style.strokeDasharray = `${index * 20}, 2000`;
+        }
+
+        function updateTrailCounter() {
+            document.getElementById('trail-counter').textContent = numberOfTrails;
+        }
+
+        function saveSettings() {
+            const settings = {
+                hue: document.getElementById('hue-slider').value,
+                trail1: document.getElementById('trail-slider1').value,
+                trail2: document.getElementById('trail-slider2').value,
+                numberOfTrails: numberOfTrails,
+                randomTrail: document.getElementById('random-trail').checked,
+                speed: document.getElementById('speed-slider').value,
+                additionalTrails: Array.from(document.querySelectorAll('#additional-trails polygon')).map(polygon => polygon.getAttribute('points'))
+            };
+            localStorage.setItem('webcamBorderSettings', JSON.stringify(settings));
+        }
+
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('webcamBorderSettings'));
+            if (settings) {
+                document.getElementById('hue-slider').value = settings.hue;
+                document.getElementById('trail-slider1').value = settings.trail1;
+                document.getElementById('trail-slider2').value = settings.trail2;
+                document.getElementById('speed-slider').value = settings.speed;
+                numberOfTrails = settings.numberOfTrails;
+                document.getElementById('random-trail').checked = settings.randomTrail;
+
+                updatePolygonColor(settings.hue);
+                updateTrailCounter();
+                updatePolygonPoints();
+
+                if (settings.randomTrail) {
+                    randomizeTrailLength();
+                }
+
+                const additionalTrailsContainer = document.getElementById('additional-trails');
+                additionalTrailsContainer.innerHTML = '';
+                settings.additionalTrails.forEach(points => {
+                    const newPolygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                    newPolygon.classList.add('highlight');
+                    newPolygon.setAttribute('points', points);
+                    additionalTrailsContainer.appendChild(newPolygon);
+                });
+            }
+        }
+
+        document.getElementById('hue-slider').addEventListener('input', function() {
+            updatePolygonColor(this.value);
+        });
+
+        document.getElementById('trail-slider1').addEventListener('input', function() {
+            const polygons = document.querySelectorAll('.highlight');
+            polygons.forEach((polygon, index) => {
+                updateTrailLength(index + 1, polygon);
+            });
+        });
+
+        document.getElementById('trail-slider2').addEventListener('input', function() {
+            const polygons = document.querySelectorAll('.highlight');
+            polygons.forEach((polygon, index) => {
+                updateTrailLength(index + 1, polygon);
+            });
+        });
+
+        document.getElementById('speed-slider').addEventListener('input', function() {
+            const speed = this.value;
+            const polygons = document.querySelectorAll('.highlight');
+            polygons.forEach(polygon => {
+                polygon.style.animationDuration = `${Math.abs(speed)}s`;
+                polygon.style.animationDirection = speed < 0 ? 'reverse' : 'normal';
+            });
+        });
+
+        document.getElementById('decrease-trails').addEventListener('click', function() {
+            numberOfTrails = Math.max(numberOfTrails - 1, 0);
+            updateTrailCounter();
+            updatePolygonPoints();
+        });
+
+        document.getElementById('increase-trails').addEventListener('click', function() {
+            numberOfTrails += 1;
+            updateTrailCounter();
+            updatePolygonPoints();
+        });
+
+        document.getElementById('random-trail').addEventListener('change', function() {
+            if (this.checked) {
+                randomizeTrailLength();
+            } else {
+                clearInterval(randomTrailInterval);
+            }
+        });
+
+        document.getElementById('save-settings').addEventListener('click', saveSettings);
+
+        let randomTrailInterval;
+        function randomizeTrailLength() {
+            randomTrailInterval = setInterval(function() {
+                const randomValue1 = Math.floor(Math.random() * 10) + 1;
+                const randomValue2 = Math.floor(Math.random() * 10) + 1;
+                const randomHue = Math.floor(Math.random() * 360);
+                document.getElementById('trail-slider1').value = randomValue1;
+                document.getElementById('trail-slider2').value = randomValue2;
+                document.getElementById('hue-slider').value = randomHue;
+                const polygons = document.querySelectorAll('.highlight');
+                polygons.forEach((polygon, index) => {
+                    updateTrailLength(index + 1, polygon);
+                });
+                updatePolygonColor(randomHue);
+                updatePolygonPoints();
+            }, 1000);
+        }
+
+        document.body.addEventListener('click', function() {
+            const sliderContainer = document.querySelector('.slider-container');
+            sliderContainer.style.display = 'block';
+        });
+
+        document.querySelector('.close-menu').addEventListener('click', function(event) {
+            event.stopPropagation();
+            const sliderContainer = document.querySelector('.slider-container');
+            sliderContainer.style.display = 'none';
+        });
+
+        loadSettings();
+        updatePolygonPoints();
+        setInterval(updatePolygonPoints, 10000);
+    </script>
+</body>
+</html>

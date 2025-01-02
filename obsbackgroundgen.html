@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        .container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, 
+                #000428 0%, 
+                #001b5e 25%, 
+                #004e92 100%);
+        }
+        .menu {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            color: #fff;
+            z-index: 10;
+            display: none;
+        }
+        .menu label, .menu input {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .hamburger {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            cursor: pointer;
+            z-index: 20;
+        }
+        .hamburger div {
+            width: 30px;
+            height: 3px;
+            background-color: white;
+            margin: 5px 0;
+        }
+        .edge {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 150%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            transform-origin: 0 0;
+            transform: rotate(var(--shared-angle, 27deg));
+        }
+        .light-effect {
+            position: absolute;
+            width: 100px;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                rgba(0, 195, 255, 0) 0%, 
+                rgba(0, 195, 255, 0.8) 20%, 
+                rgba(255, 255, 255, 1) 50%, 
+                rgba(0, 195, 255, 0.8) 80%, 
+                rgba(0, 195, 255, 0) 100%);
+            filter: blur(1px);
+            opacity: 0;
+            transform-origin: 0 0;
+            animation: moveLight 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            box-shadow: 0 0 20px #00ffff;
+            transform: rotate(var(--shared-angle, 27deg));
+        }
+        .geometric-shape {
+            position: absolute;
+            opacity: 0.4;
+            animation: float var(--speed) infinite ease-in-out;
+            box-shadow: 0 0 15px rgba(0, 195, 255, 0.3);
+        }
+        .hexagon {
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            background: rgba(0, 195, 255, 0.3);
+            border: 2px solid rgba(0, 195, 255, 0.5);
+        }
+        .square {
+            background: rgba(0, 195, 255, 0.3);
+            border: 2px solid rgba(0, 195, 255, 0.5);
+            transform: rotate(45deg);
+        }
+        .circle {
+            border-radius: 50%;
+            background: radial-gradient(circle at center,
+                rgba(0, 195, 255, 0.4) 0%, 
+                rgba(0, 195, 255, 0.1) 70%);
+            border: 2px solid rgba(0, 195, 255, 0.5);
+        }
+        .star {
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            background: rgba(0, 195, 255, 0.3);
+            border: 2px solid rgba(0, 195, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 195, 255, 0.3);
+            filter: hue-rotate(var(--hue, 0deg));
+            position: absolute;
+            opacity: 0.4;
+            animation: float var(--speed) infinite ease-in-out;
+        }
+        .trapezoid {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 100%, 0% 100%);
+            background: rgba(0, 195, 255, 0.3);
+            border: 2px solid rgba(0, 195, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 195, 255, 0.3);
+        }
+        .triangle {
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            background: rgba(0, 195, 255, 0.3);
+            border: 2px solid rgba(0, 195, 255, 0.5);
+        }
+        .rectangle {
+            background: rgba(0, 195, 255, 0.3);
+            border: 2px solid rgba(0, 195, 255, 0.5);
+        }
+        .controller {
+            position: absolute;
+            opacity: 0.4;
+            animation: float var(--speed) infinite ease-in-out;
+            box-shadow: 0 0 15px rgba(0, 195, 255, 0.3);
+            background: rgba(0, 195, 255, 0.3);
+            border: 2px solid rgba(0, 195, 255, 0.5);
+            clip-path: polygon(20% 0%, 80% 0%, 100% 20%, 100% 80%, 80% 100%, 20% 100%, 0% 80%, 0% 20%);
+        }
+
+        @keyframes moveLight {
+            0% { 
+                transform: rotate(var(--shared-angle, 27deg)) translateX(-300px);
+                opacity: 1;
+            }
+            100% { 
+                transform: rotate(var(--shared-angle, 27deg)) translateX(142vw);
+                opacity: 1;
+            }
+        }
+        @keyframes float {
+            0%, 100% { 
+                transform: translate(0, 0) rotate(var(--rotate));
+                filter: brightness(1);
+            }
+            25% {
+                transform: translate(var(--translateX), var(--translateY)) rotate(calc(var(--rotate) + 45deg));
+                filter: brightness(1.2);
+            }
+            50% { 
+                transform: translate(calc(var(--translateX) * 2), calc(var(--translateY) * 2)) rotate(calc(var(--rotate) + 90deg));
+                filter: brightness(1.2);
+            }
+            75% {
+                transform: translate(var(--translateX), var(--translateY)) rotate(calc(var(--rotate) + 45deg));
+                filter: brightness(1.2);
+            }
+        }
+        .glow {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center,
+                rgba(0, 195, 255, 0.1) 0%, 
+                rgba(0, 0, 0, 0) 70%);
+            pointer-events: none;
+        }
+    </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const autoHueCheckbox = document.getElementById('auto-hue');
+        const hueSpeedLabel = document.getElementById('hue-speed-label');
+        const hueSpeedInput = document.getElementById('hue-speed');
+
+        autoHueCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                hueSpeedLabel.style.display = 'inline-block';
+                hueSpeedInput.style.display = 'inline-block';
+            } else {
+                hueSpeedLabel.style.display = 'none';
+                hueSpeedInput.style.display = 'none';
+            }
+        });
+
+        // Ensure the hue speed slider is hidden by default
+        hueSpeedLabel.style.display = 'none';
+        hueSpeedInput.style.display = 'none';
+    });
+    let autoHueInterval;
+
+    function startAutoHue() {
+        const hueSpeed = document.getElementById('hue-speed').value;
+        autoHueInterval = setInterval(() => {
+            const hueInput = document.getElementById('hue');
+            let hueValue = parseInt(hueInput.value);
+            hueValue = (hueValue + 1) % 360;
+            hueInput.value = hueValue;
+            updateHue();
+        }, hueSpeed * 1);
+    }
+
+    function stopAutoHue() {
+        clearInterval(autoHueInterval);
+    }
+
+    function toggleAutoHue(isChecked) {
+        const hueSpeedLabel = document.getElementById('hue-speed-label');
+        const hueSpeedInput = document.getElementById('hue-speed');
+        if (isChecked) {
+            hueSpeedLabel.style.display = 'block';
+            hueSpeedInput.style.display = 'block';
+            startAutoHue();
+        } else {
+            hueSpeedLabel.style.display = 'none';
+            hueSpeedInput.style.display = 'none';
+            stopAutoHue();
+        }
+    }
+
+    function updateHueSpeed() {
+        const hueSpeed = document.getElementById('hue-speed').value;
+        document.getElementById('hue-speed-value').innerText = hueSpeed;
+        if (document.getElementById('auto-hue').checked) {
+            stopAutoHue();
+            startAutoHue();
+        }
+    }
+</script>
+</head>
+<body onload="loadSettings(); createGeometricShapes();">
+    <div class="container">
+        <div class="glow"></div>
+        <div class="edge" style="--shared-angle: 27deg;"></div>
+        <div class="light-effect" style="--shared-angle: 27deg;"></div>
+        <div class="menu" id="controls-menu" style="display: none;">
+            <br>
+            <br>
+            <label for="auto-hue">Auto Hue</label>
+            <input type="checkbox" id="auto-hue" onchange="toggleAutoHue(this.checked)">
+            <span id="hue-speed-container" style="display: none;"></span>
+                <label for="hue-speed" id="hue-speed-label">Hue Speed: <span id="hue-speed-value">1</span>s</label>
+                <input type="range" id="hue-speed" min="1" max="10" value="1" oninput="updateHueSpeed()">
+            <span id="hue-speed-container" style="display: none;"></span>
+            <br>
+            <label for="shared-angle">Edge and Light Effect Angle: <span id="shared-angle-value">27</span>°</label>
+            <input type="range" id="shared-angle" min="0" max="360" value="27" oninput="updateSharedAngle()">
+            <label for="shape-speed">Shape Speed: <span id="shape-speed-value">20</span>s</label>
+            <input type="range" id="shape-speed" min="5" max="30" value="20" oninput="updateSpeed()">
+            <label for="movement-speed">Shape Movement Speed: <span id="movement-speed-value">20</span>s</label>
+            <input type="range" id="movement-speed" min="5" max="30" value="20" oninput="updateMovementSpeed()">
+            <label for="shape-count">Number of Shapes: <span id="shape-count-value">15</span></label>
+            <input type="range" id="shape-count" min="1" max="50" value="15" oninput="updateShapeCount()">
+            <label for="hue">Hue: <span id="hue-value">0</span>°</label>
+            <input type="range" id="hue" min="0" max="360" value="0" oninput="updateHue()">
+            <button onclick="resetShapes()">Reset Shapes</button>
+            <button onclick="saveSettings()">Save Settings</button>
+            <button onclick="saveAsImage()">Save as Image</button>
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+</body>
+            <label for="auto-hue">Auto Hue</label>
+            <input type="checkbox" id="auto-hue" onchange="toggleAutoHue(this.checked)">
+
+            <label for="hue-speed" id="hue-speed-label" style="display: none;">Hue Speed: <span id="hue-speed-value">1</span>s</label>
+            <input type="range" id="hue-speed" min="1" max="10" value="1" oninput="updateHueSpeed()" style="display: none;">
+            <label for="shared-angle">Edge and Light Effect Angle: <span id="shared-angle-value">27</span>°</label>
+            <input type="range" id="shared-angle" min="0" max="360" value="27" oninput="updateSharedAngle()">
+            
+            <label for="shape-speed">Shape Speed: <span id="shape-speed-value">20</span>s</label>
+            <input type="range" id="shape-speed" min="5" max="30" value="20" oninput="updateSpeed()">
+            
+            <label for="movement-speed">Shape Movement Speed: <span id="movement-speed-value">20</span>s</label>
+            <input type="range" id="movement-speed" min="5" max="30" value="20" oninput="updateMovementSpeed()">
+            
+            <label for="shape-count">Number of Shapes: <span id="shape-count-value">15</span></label>
+            <input type="range" id="shape-count" min="1" max="50" value="15" oninput="updateShapeCount()">
+            
+            <label for="hue">Hue: <span id="hue-value">0</span>°</label>
+            <input type="range" id="hue" min="0" max="360" value="0" oninput="updateHue()">
+            
+            <button onclick="resetShapes()">Reset Shapes</button>
+            <button onclick="saveSettings()">Save Settings</button>
+            <button onclick="saveAsImage()">Save as Image</button>
+        </div>
+        <div class="hamburger" onclick="toggleMenu()">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-alpha1/html2canvas.min.js"></script>
+    <script>
+        function createGeometricShapes(count = 15) {
+            const shapes = document.querySelectorAll('.geometric-shape');
+            shapes.forEach(shape => shape.remove());
+
+            const shapesArray = ['hexagon', 'square', 'circle', 'star', 'trapezoid', 'triangle', 'rectangle', 'controller'];
+            const container = document.querySelector('.container');
+
+            for (let i = 0; i < count; i++) {
+                const shape = document.createElement('div');
+                const shapeType = shapesArray[Math.floor(Math.random() * shapesArray.length)];
+
+                shape.className = `geometric-shape ${shapeType}`;
+                shape.style.left = `${Math.random() * 80 + 10}%`;
+                shape.style.top = `${Math.random() * 80 + 10}%`;
+
+                const size = Math.random() * 60 + 40;
+                shape.style.width = `${size}px`;
+                shape.style.height = `${size}px`;
+
+                shape.style.setProperty('--speed', `${Math.random() * 15 + 20}s`);
+                shape.style.setProperty('--translateX', `${Math.random() * 100 - 50}px`);
+                shape.style.setProperty('--translateY', `${Math.random() * 100 - 50}px`);
+                shape.style.setProperty('--rotate', `${Math.random() * 360}deg`);
+
+                container.appendChild(shape);
+            }
+        }
+
+        function updateSharedAngle() {
+            const angle = document.getElementById('shared-angle').value;
+            document.getElementById('shared-angle-value').innerText = angle;
+            const edge = document.querySelector('.edge');
+            const lightEffect = document.querySelector('.light-effect');
+            edge.style.setProperty('--shared-angle', `${angle}deg`);
+            lightEffect.style.setProperty('--shared-angle', `${angle}deg`);
+        }
+
+        function updateSpeed() {
+            const speed = document.getElementById('shape-speed').value;
+            document.getElementById('shape-speed-value').innerText = speed;
+            const shapes = document.querySelectorAll('.geometric-shape');
+            shapes.forEach(shape => {
+                shape.style.setProperty('--speed', `${speed}s`);
+            });
+        }
+
+        function updateMovementSpeed() {
+            const speed = document.getElementById('movement-speed').value;
+            document.getElementById('movement-speed-value').innerText = speed;
+            const shapes = document.querySelectorAll('.geometric-shape');
+            shapes.forEach(shape => {
+                shape.style.setProperty('--translateX', `${Math.random() * (speed * 10) - (speed * 5)}px`);
+                shape.style.setProperty('--translateY', `${Math.random() * (speed * 10) - (speed * 5)}px`);
+            });
+        }
+
+        function updateShapeCount() {
+            const shapeCount = document.getElementById('shape-count').value;
+            document.getElementById('shape-count-value').innerText = shapeCount;
+            createGeometricShapes(shapeCount);
+        }
+
+        function updateHue() {
+            const hue = document.getElementById('hue').value;
+            document.getElementById('hue-value').innerText = hue;
+            const shapes = document.querySelectorAll('.geometric-shape');
+            shapes.forEach(shape => {
+                shape.style.filter = `hue-rotate(${hue}deg)`;
+            });
+            const container = document.querySelector('.container');
+            container.style.filter = `hue-rotate(${hue}deg)`;
+        }
+
+        function resetShapes() {
+            const shapes = document.querySelectorAll('.geometric-shape');
+            shapes.forEach(shape => {
+                shape.style.left = `${Math.random() * 80 + 10}%`;
+                shape.style.top = `${Math.random() * 80 + 10}%`;
+            });
+        }
+
+        function toggleMenu() {
+            const menu = document.getElementById('controls-menu');
+            menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function saveAsImage() {
+            const container = document.querySelector('.container');
+            html2canvas(container).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = 'shapes.png';
+                link.click();
+            });
+        }
+
+        function toggleAutoHue(isChecked) {
+            const hueSpeedLabel = document.getElementById('hue-speed-label');
+            const hueSpeedInput = document.getElementById('hue-speed');
+            if (isChecked) {
+                hueSpeedLabel.style.display = 'block';
+                hueSpeedInput.style.display = 'block';
+            } else {
+                hueSpeedLabel.style.display = 'none';
+                hueSpeedInput.style.display = 'none';
+            }
+        }
+
+        function saveSettings() {
+            const settings = {
+                sharedAngle: document.querySelector('#shared-angle').value,
+                shapeSpeed: document.querySelector('#shape-speed').value,
+                movementSpeed: document.querySelector('#movement-speed').value,
+                shapeCount: document.querySelector('#shape-count').value,
+                hue: document.querySelector('#hue').value
+            };
+            localStorage.setItem('settings', JSON.stringify(settings));
+            alert('Settings saved!');
+        }
+
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('settings'));
+            if (settings) {
+                document.querySelector('#shared-angle').value = settings.sharedAngle;
+                document.querySelector('#shared-angle-value').innerText = settings.sharedAngle;
+                document.querySelector('.edge').style.setProperty('--shared-angle', `${settings.sharedAngle}deg`);
+                document.querySelector('.light-effect').style.setProperty('--shared-angle', `${settings.sharedAngle}deg`);
+
+                document.querySelector('#shape-speed').value = settings.shapeSpeed;
+                document.querySelector('#shape-speed-value').innerText = settings.shapeSpeed;
+                document.querySelectorAll('.geometric-shape').forEach(shape => {
+                    shape.style.setProperty('--speed', `${settings.shapeSpeed}s`);
+                });
+
+                document.querySelector('#movement-speed').value = settings.movementSpeed;
+                document.querySelector('#movement-speed-value').innerText = settings.movementSpeed;
+                document.querySelectorAll('.geometric-shape').forEach(shape => {
+                    shape.style.setProperty('--translateX', `${Math.random() * (settings.movementSpeed * 10) - (settings.movementSpeed * 5)}px`);
+                    shape.style.setProperty('--translateY', `${Math.random() * (settings.movementSpeed * 10) - (settings.movementSpeed * 5)}px`);
+                });
+
+                document.querySelector('#shape-count').value = settings.shapeCount;
+                document.querySelector('#shape-count-value').innerText = settings.shapeCount;
+                createGeometricShapes(settings.shapeCount);
+
+                document.querySelector('#hue').value = settings.hue;
+                document.querySelector('#hue-value').innerText = settings.hue;
+                document.querySelectorAll('.geometric-shape').forEach(shape => {
+                    shape.style.filter = `hue-rotate(${settings.hue}deg)`;
+                });
+                document.querySelector('.container').style.filter = `hue-rotate(${settings.hue}deg)`;
+            }
+        }
+
+        window.onload = () => {
+            loadSettings();
+            createGeometricShapes();
+        };
+    </script>
+</body>
+</html>
